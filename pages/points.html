@@ -149,15 +149,19 @@
                         points: firebase.firestore.FieldValue.increment(-cost)
                     });
 
-                    // Add redemption record (optional but good)
-                    const redemptionRef = db.collection('redemptions').doc();
-                    transaction.set(redemptionRef, {
+                    // Add to 'orders' collection so it shows in history/admin
+                    const orderRef = db.collection('orders').doc();
+                    transaction.set(orderRef, {
                         userId: currentUser.uid,
+                        productName: rewardName, // Show reward name as product
+                        price: 0, // Free (paid by points)
+                        pointsUsed: cost, // Track points used
+                        isRedemption: true,
                         rewardId: rewardId,
-                        rewardName: rewardName,
-                        cost: cost,
+                        status: 'pending', // Pending admin delivery (e.g. sending code)
+                        paymentMethod: 'points',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        status: 'pending' // Admin needs to fulfill? Or auto-fulfill if digital code? User didn't specify. Assuming manual process or just 'record'.
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 });
 
