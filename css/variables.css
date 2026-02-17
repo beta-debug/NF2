@@ -1,113 +1,117 @@
 /* ===== Design Tokens — Netflix-inspired Dark/Red Theme ===== */
 :root {
-  /* Primary Colors */
-  --color-bg: #0a0a0a;
-  --color-bg-secondary: #141414;
-  --color-bg-card: #1a1a2e;
-  --color-bg-card-hover: #222244;
-  --color-surface: #1c1c1c;
-  --color-surface-elevated: #252525;
-  --color-border: #2a2a2a;
-  --color-border-light: #3a3a3a;
+    /* Primary Colors */
+    --color-bg: #0a0a0a;
+    --color-bg-secondary: #141414;
+    --color-bg-card: #1a1a2e;
+    --color-bg-card-hover: #222244;
+    --color-surface: #1c1c1c;
+    --color-surface-elevated: #252525;
+    --color-border: #2a2a2a;
+    --color-border-light: #3a3a3a;
 
-  /* Accent Colors */
-  --color-primary: #e50914;
-  --color-primary-hover: #ff1a25;
-  --color-primary-dark: #b0060e;
-  --color-secondary: #f5c518;
-  --color-secondary-hover: #ffd633;
-  --color-accent: #00d4ff;
-  --color-accent-hover: #33ddff;
-  --color-success: #2ecc71;
-  --color-warning: #f39c12;
-  --color-danger: #e74c3c;
-  --color-info: #3498db;
+    /* Accent Colors */
+    --color-primary: #e50914;
+    --color-primary-hover: #ff1a25;
+    --color-primary-dark: #b0060e;
+    --color-secondary: #f5c518;
+    --color-secondary-hover: #ffd633;
+    --color-accent: #00d4ff;
+    --color-accent-hover: #33ddff;
+    --color-success: #2ecc71;
+    --color-warning: #f39c12;
+    --color-danger: #e74c3c;
+    --color-info: #3498db;
 
-  /* Text Colors */
-  --color-text: #f0f0f0;
-  --color-text-secondary: #a0a0a0;
-  --color-text-muted: #666;
-  --color-text-on-primary: #ffffff;
+    /* Text Colors */
+    --color-text: #f0f0f0;
+    --color-text-secondary: #a0a0a0;
+    --color-text-muted: #666;
+    --color-text-on-primary: #ffffff;
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #e50914 0%, #b0060e 100%);
-  --gradient-hero: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,0.8) 60%, #0a0a0a 100%);
-  --gradient-card: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
-  --gradient-gold: linear-gradient(135deg, #f5c518 0%, #d4a017 100%);
-  --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  --gradient-dark-overlay: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 100%);
+    /* Backgrounds */
+    --bg-cinematic: radial-gradient(circle at 50% -20%, #2b050a 0%, #0a0a0a 70%, #000000 100%);
+    --bg-glass: rgba(20, 20, 20, 0.85);
 
-  /* Typography */
-  --font-primary: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-display: 'Outfit', 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #e50914 0%, #b0060e 100%);
+    --gradient-hero: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.8) 60%, #0a0a0a 100%);
+    --gradient-card: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    --gradient-gold: linear-gradient(135deg, #f5c518 0%, #d4a017 100%);
+    --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    --gradient-dark-overlay: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 100%);
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 2rem;
-  --text-4xl: 2.5rem;
-  --text-5xl: 3.5rem;
+    /* Typography */
+    --font-primary: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-display: 'Outfit', 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  --font-light: 300;
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  --font-extrabold: 800;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
+    --text-5xl: 3.5rem;
 
-  /* Spacing */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
+    --font-light: 300;
+    --font-regular: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-extrabold: 800;
 
-  /* Border Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 50%;
-  --radius-pill: 9999px;
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    --space-24: 6rem;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
-  --shadow-xl: 0 12px 50px rgba(0,0,0,0.6);
-  --shadow-glow-red: 0 0 20px rgba(229,9,20,0.4);
-  --shadow-glow-gold: 0 0 20px rgba(245,197,24,0.3);
-  --shadow-glow-accent: 0 0 20px rgba(0,212,255,0.3);
-  --shadow-card: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 50%;
+    --radius-pill: 9999px;
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  --transition-slow: 400ms ease;
-  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 12px 50px rgba(0, 0, 0, 0.6);
+    --shadow-glow-red: 0 0 20px rgba(229, 9, 20, 0.4);
+    --shadow-glow-gold: 0 0 20px rgba(245, 197, 24, 0.3);
+    --shadow-glow-accent: 0 0 20px rgba(0, 212, 255, 0.3);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
 
-  /* Z-index */
-  --z-dropdown: 100;
-  --z-header: 200;
-  --z-modal-backdrop: 300;
-  --z-modal: 400;
-  --z-toast: 500;
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+    --transition-slow: 400ms ease;
+    --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Container */
-  --container-max: 1280px;
-  --container-padding: var(--space-6);
+    /* Z-index */
+    --z-dropdown: 100;
+    --z-header: 200;
+    --z-modal-backdrop: 300;
+    --z-modal: 400;
+    --z-toast: 500;
 
-  /* Header */
-  --header-height: 70px;
+    /* Container */
+    --container-max: 1280px;
+    --container-padding: var(--space-6);
+
+    /* Header */
+    --header-height: 70px;
 }
