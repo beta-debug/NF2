@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MyShop - แพลตฟอร์มขายสินค้าออนไลน์คุณภาพ พร้อมบริการที่ดีที่สุด">
+    <title>MyShop — หน้าแรก</title>
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="page-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-bg">
+                <img src="/images/hero-banner.webp" alt="Hero Banner" onerror="this.style.display='none'">
+            </div>
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-badge">🔥 พร้อมให้บริการแล้ว</div>
+                    <h1 class="hero-title">
+                        สินค้าคุณภาพ<br>
+                        <span>ราคาที่คุณคุ้มค่า</span>
+                    </h1>
+                    <p class="hero-description">
+                        เลือกซื้อสินค้าหลากหลายประเภท คุณภาพดี ราคาไม่แพง พร้อมโปรโมชั่นพิเศษมากมาย สั่งง่าย จ่ายสะดวก
+                    </p>
+                    <div class="hero-actions">
+                        <a href="/pages/products.html" class="btn btn-primary btn-lg">🛒 ดูสินค้าทั้งหมด</a>
+                        <a href="/pages/promotions.html" class="btn btn-secondary btn-lg">🎁 โปรโมชั่น</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="section">
+            <div class="container">
+                <div class="text-center fade-in">
+                    <h2 class="section-title">สินค้าแนะนำ</h2>
+                    <p class="section-subtitle">สินค้ายอดนิยมที่คัดสรรมาเพื่อคุณ</p>
+                </div>
+                <div class="grid grid-3 fade-in" id="featured-products">
+                    <div class="loader" style="grid-column: 1 / -1;">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="text-center fade-in" style="margin-top: var(--space-10);">
+                    <a href="/pages/products.html" class="btn btn-secondary btn-lg">ดูสินค้าทั้งหมด →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Promo Banner -->
+        <section class="section" style="padding-top: 0;">
+            <div class="container fade-in">
+                <div class="promo-banner">
+                    <div class="promo-banner-bg">
+                        <img src="/images/promo-banner.webp" alt="Promotion" onerror="this.style.display='none'">
+                    </div>
+                    <div class="promo-banner-content">
+                        <div class="hero-badge"
+                            style="background: rgba(245,197,24,0.15); border-color: rgba(245,197,24,0.3); color: var(--color-secondary);">
+                            ⚡ โปรโมชั่นพิเศษ</div>
+                        <h2 class="promo-banner-title">ลดสูงสุด 50%</h2>
+                        <p class="promo-banner-text">โปรโมชั่นพิเศษสำหรับลูกค้าใหม่ สมัครสมาชิกวันนี้รับส่วนลดทันที!</p>
+                        <a href="/pages/promotions.html" class="btn btn-gold btn-lg">ดูโปรโมชั่น</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reviews Preview -->
+        <section class="section">
+            <div class="container">
+                <div class="text-center fade-in">
+                    <h2 class="section-title">รีวิวจากลูกค้า</h2>
+                    <p class="section-subtitle">เสียงตอบรับจากลูกค้าที่ไว้วางใจเราเสมอ</p>
+                </div>
+                <div class="grid grid-3 fade-in">
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <div class="review-card-avatar">ส</div>
+                            <div>
+                                <div class="review-card-name">สมชาย</div>
+                                <div class="review-card-date">2 วันที่แล้ว</div>
+                            </div>
+                        </div>
+                        <div class="review-card-stars">★★★★★</div>
+                        <p class="review-card-text">สินค้าคุณภาพดีมากครับ ส่งไวเกินคาด ประทับใจมากๆ
+                            จะกลับมาซื้ออีกแน่นอน</p>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <div class="review-card-avatar">น</div>
+                            <div>
+                                <div class="review-card-name">นิภา</div>
+                                <div class="review-card-date">5 วันที่แล้ว</div>
+                            </div>
+                        </div>
+                        <div class="review-card-stars">★★★★★</div>
+                        <p class="review-card-text">บริการดีค่ะ แอดมินตอบไว ได้ของตรงปก ราคาถูกกว่าที่อื่นด้วย แนะนำเลย
+                        </p>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <div class="review-card-avatar">พ</div>
+                            <div>
+                                <div class="review-card-name">พงศกร</div>
+                                <div class="review-card-date">1 สัปดาห์ที่แล้ว</div>
+                            </div>
+                        </div>
+                        <div class="review-card-stars">★★★★☆</div>
+                        <p class="review-card-text">ซื้อมาหลายครั้งแล้ว คุณภาพคงที่ตลอด ราคาสมเหตุสมผล ระบบสั่งซื้อง่าย
+                        </p>
+                    </div>
+                </div>
+                <div class="text-center fade-in" style="margin-top: var(--space-10);">
+                    <a href="/pages/reviews.html" class="btn btn-secondary">ดูรีวิวทั้งหมด →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="section" style="background: var(--color-bg-secondary);">
+            <div class="container">
+                <div class="text-center fade-in">
+                    <h2 class="section-title">ทำไมต้องเลือกเรา</h2>
+                    <p class="section-subtitle">เหตุผลที่ลูกค้าไว้วางใจ MyShop</p>
+                </div>
+                <div class="grid grid-4 fade-in">
+                    <div style="text-align:center;padding:var(--space-6);">
+                        <div style="font-size:48px;margin-bottom:var(--space-4);">✅</div>
+                        <h4 style="margin-bottom:var(--space-2);">สินค้าคุณภาพ</h4>
+                        <p style="font-size:var(--text-sm);">คัดสรรสินค้าคุณภาพดี ตรงปกทุกชิ้น</p>
+                    </div>
+                    <div style="text-align:center;padding:var(--space-6);">
+                        <div style="font-size:48px;margin-bottom:var(--space-4);">⚡</div>
+                        <h4 style="margin-bottom:var(--space-2);">บริการรวดเร็ว</h4>
+                        <p style="font-size:var(--text-sm);">ตอบแชทไว ส่งของเร็ว ไม่ต้องรอนาน</p>
+                    </div>
+                    <div style="text-align:center;padding:var(--space-6);">
+                        <div style="font-size:48px;margin-bottom:var(--space-4);">🔒</div>
+                        <h4 style="margin-bottom:var(--space-2);">ปลอดภัย 100%</h4>
+                        <p style="font-size:var(--text-sm);">ข้อมูลลูกค้าปลอดภัย มั่นใจทุกธุรกรรม</p>
+                    </div>
+                    <div style="text-align:center;padding:var(--space-6);">
+                        <div style="font-size:48px;margin-bottom:var(--space-4);">💬</div>
+                        <h4 style="margin-bottom:var(--space-2);">ซัพพอร์ต 24/7</h4>
+                        <p style="font-size:var(--text-sm);">ทีมงานพร้อมช่วยเหลือคุณตลอดเวลา</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/products.js"></script>
+</body>
+
+</html>
