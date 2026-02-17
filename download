@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สะสมแต้ม — MyShop</title>
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon" href="images/favicon.ico">
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="page-content">
+        <section class="section">
+            <div class="container">
+                <div class="text-center" style="margin-bottom: var(--space-8);">
+                    <h1 class="section-title">🎁 สะสมแต้มแลกรางวัล</h1>
+                    <p class="section-subtitle">ยิ่งซื้อยิ่งได้! สะสมแต้มเพื่อแลกของรางวัลสุดพิเศษ</p>
+                </div>
+
+                <!-- Points Balance Card -->
+                <div class="card"
+                    style="max-width: 600px; margin: 0 auto var(--space-12); text-align: center; border: 2px solid var(--color-secondary); background: linear-gradient(135deg, rgba(245,197,24,0.1) 0%, rgba(26,26,46,0.5) 100%);">
+                    <div
+                        style="font-size: var(--text-lg); color: var(--color-text-secondary); margin-bottom: var(--space-2);">
+                        คะแนนสะสมของคุณ</div>
+                    <div style="font-size: var(--text-5xl); font-weight: 800; color: var(--color-secondary); text-shadow: var(--shadow-glow-gold);"
+                        id="user-points-display">
+                        <div class="spinner" style="width: 30px; height: 30px; border-width: 2px;"></div>
+                    </div>
+                    <div style="font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2);">
+                        แต้ม</div>
+                </div>
+
+                <!-- Rewards Grid -->
+                <h2 style="margin-bottom: var(--space-6);">ของรางวัลที่แลกได้</h2>
+                <div class="grid grid-3" id="rewards-list">
+                    <div style="grid-column: 1/-1; text-align: center; padding: var(--space-12);">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <!-- Points Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loadUserPoints(user.uid);
+                    loadRewards();
+                } else {
+                    document.getElementById('user-points-display').innerHTML = '<span style="font-size:var(--text-xl);">กรุณาเข้าสู่ระบบ</span>';
+                    document.getElementById('rewards-list').innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: var(--space-8);">
+                            <p>กรุณาเข้าสู่ระบบเพื่อดูของรางวัลและแต้มสะสม</p>
+                            <button class="btn btn-primary" onclick="openAuthModal('login')">เข้าสู่ระบบ</button>
+                        </div>
+                    `;
+                }
+            });
+        });
+
+        async function loadUserPoints(uid) {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists) {
+                    const points = doc.data().points || 0;
+                    document.getElementById('user-points-display').innerText = points.toLocaleString();
+                } else {
+                    document.getElementById('user-points-display').innerText = '0';
+                }
+            } catch (error) {
+                console.error('Error loading points:', error);
+                document.getElementById('user-points-display').innerText = '-';
+            }
+        }
+
+        async function loadRewards() {
+            const container = document.getElementById('rewards-list');
+            try {
+                const snapshot = await db.collection('redeemables').orderBy('points', 'asc').get();
+                if (snapshot.empty) {
+                    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--color-text-muted);">ยังไม่มีของรางวัลในขณะนี้</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const r = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div style="height: 200px; overflow: hidden; border-radius: var(--radius-md); margin-bottom: var(--space-4); background: #000;">
+                            <img src="${r.imageUrl || ''}" alt="${r.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect fill=%22%231a1a2e%22 width=%22100%25%22 height=%22100%25%22/><text x=%2250%25%22 y=%2250%25%22 dy=%22.3em%22 fill=%22%23666%22 font-size=%2220%22 text-anchor=%22middle%22>No Image</text></svg>'">
+                        </div>
+                        <h3 class="card-title">${r.name}</h3>
+                        <p class="card-desc">${r.description || ''}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-4);">
+                            <span style="font-size: var(--text-lg); font-weight: 700; color: var(--color-secondary);">🪙 ${r.points} แต้ม</span>
+                            <button class="btn btn-secondary btn-sm" onclick="redeemReward('${doc.id}', ${r.points}, '${r.name.replace(/'/g, "\\'")}')">แลกรางวัล</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading rewards:', error);
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--color-danger);">โหลดยังไม่สำเร็จ</div>';
+            }
+        }
+
+        async function redeemReward(rewardId, cost, rewardName) {
+            if (!confirm(`ต้องการแลก "${rewardName}" ด้วย ${cost} แต้มหรือไม่?`)) return;
+
+            if (!currentUser) {
+                showToast('กรุณาเข้าสู่ระบบ', 'error');
+                return;
+            }
+
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    const userDoc = await transaction.get(userRef);
+                    if (!userDoc.exists) throw "User not found";
+
+                    const currentPoints = userDoc.data().points || 0;
+                    if (currentPoints < cost) {
+                        throw "แต้มของคุณไม่พอ";
+                    }
+
+                    // Deduct points
+                    transaction.update(userRef, {
+                        points: firebase.firestore.FieldValue.increment(-cost)
+                    });
+
+                    // Add to 'orders' collection so it shows in history/admin
+                    const orderRef = db.collection('orders').doc();
+                    transaction.set(orderRef, {
+                        userId: currentUser.uid,
+                        productName: rewardName, // Show reward name as product
+                        price: 0, // Free (paid by points)
+                        pointsUsed: cost, // Track points used
+                        isRedemption: true,
+                        rewardId: rewardId,
+                        status: 'pending', // Pending admin delivery (e.g. sending code)
+                        paymentMethod: 'points',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+
+                showToast('แลกรางวัลสำเร็จ! 🎉', 'success');
+                loadUserPoints(currentUser.uid); // Refresh display
+            } catch (error) {
+                console.error("Redemption error:", error);
+                showToast(error.toString().includes("แต้ม") ? 'แต้มของคุณไม่เพียงพอ' : 'เกิดข้อผิดพลาด', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

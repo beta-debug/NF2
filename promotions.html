@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="แอดมิน — จัดการสินค้าและออเดอร์">
+    <title>แอดมิน — MyShop</title>
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <div id="admin-content">
+        <div class="admin-layout">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div style="margin-bottom: var(--space-6);">
+                    <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-1);">⚙️ แอดมิน</h3>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted);">จัดการร้านค้าของคุณ</p>
+                </div>
+
+                <div class="admin-sidebar-item active" data-section="products" onclick="showAdminSection('products')">
+                    <span class="icon">📦</span>
+                    <span>จัดการสินค้า</span>
+                </div>
+                <div class="admin-sidebar-item" data-section="payment" onclick="showAdminSection('payment')">
+                    <span class="icon">💳</span>
+                    <span>ช่องทางชำระเงิน</span>
+                </div>
+                <div class="admin-sidebar-item" data-section="orders" onclick="showAdminSection('orders')">
+                    <span class="icon">📋</span>
+                    <span>จัดการออเดอร์</span>
+                </div>
+                <div class="admin-sidebar-item" data-section="rewards" onclick="showAdminSection('rewards')">
+                    <span class="icon">🎁</span>
+                    <span>จัดการโปรโมชั่น (Apps)</span>
+                </div>
+                <div class="admin-sidebar-item" data-section="categories" onclick="showAdminSection('categories')">
+                    <span class="icon">📁</span>
+                    <span>จัดการหมวดหมู่</span>
+                </div>
+                <div class="admin-sidebar-item" data-section="contacts" onclick="showAdminSection('contacts')">
+                    <span class="icon">💬</span>
+                    <span>จัดการช่องทางติดต่อ</span>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="admin-main">
+                <!-- Mobile sidebar toggle -->
+                <button class="btn btn-secondary btn-sm" onclick="toggleAdminSidebar()"
+                    style="margin-bottom: var(--space-4); display: none;" id="admin-sidebar-toggle">
+                    ☰ เมนู
+                </button>
+
+                <!-- Section: Products -->
+                <div class="admin-section" id="section-products">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">📦 เพิ่ม/แก้ไขสินค้า</h2>
+                        <form id="product-form" onsubmit="handleProductSubmit(event)">
+                            <div class="grid grid-2" style="gap: var(--space-5);">
+                                <div>
+                                    <!-- Image Preview -->
+                                    <div class="image-upload" id="image-preview" style="margin-bottom: var(--space-5);">
+                                        <div class="image-upload-icon">📷</div>
+                                        <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">URL รูปภาพ</label>
+                                        <input type="url" class="form-input" id="product-image-url"
+                                            placeholder="https://example.com/image.jpg" oninput="previewImageUrl()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อสินค้า *</label>
+                                        <input type="text" class="form-input" id="product-name"
+                                            placeholder="เช่น แพ็คเกจ Premium" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">ราคา (บาท) *</label>
+                                        <input type="number" class="form-input" id="product-price" placeholder="299"
+                                            min="0" step="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">แบดจ์ (ข้อความ badge)</label>
+                                        <input type="text" class="form-input" id="product-badge"
+                                            placeholder="เช่น HOT, ขายดี, ใหม่">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">หมวดหมู่</label>
+                                        <select class="form-input" id="product-category">
+                                            <option value="">-- เลือกหมวดหมู่ --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">รายละเอียด</label>
+                                        <textarea class="form-textarea" id="product-description"
+                                            placeholder="รายละเอียดสินค้า..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    id="product-submit-btn">เพิ่มสินค้า</button>
+                                <button type="button" class="btn btn-secondary btn-lg hidden" id="cancel-edit-btn"
+                                    onclick="resetProductForm()">ยกเลิกการแก้ไข</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Products List -->
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">📋 รายการสินค้าทั้งหมด</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>รูป</th>
+                                        <th>ชื่อสินค้า</th>
+                                        <th>ราคา</th>
+                                        <th>รายละเอียด</th>
+                                        <th>วันที่เพิ่ม</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-products-list">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;padding:var(--space-8);">
+                                            <div class="spinner" style="margin:0 auto;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Payment Settings -->
+                <div class="admin-section hidden" id="section-payment">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">💳 ช่องทางการชำระเงิน</h2>
+                        <form onsubmit="savePaymentSettings(event)">
+                            <div class="grid grid-2" style="gap: var(--space-8);">
+                                <div>
+                                    <h3 style="margin-bottom: var(--space-4); font-size: var(--text-lg);">📱 QR Code
+                                        พร้อมเพย์</h3>
+                                    <div class="image-upload" id="qr-preview" style="margin-bottom: var(--space-4);">
+                                        <div class="image-upload-icon">📱</div>
+                                        <div class="image-upload-text">วาง URL รูป QR Code</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">URL รูป QR Code</label>
+                                        <input type="url" class="form-input" id="qr-code-url"
+                                            placeholder="https://example.com/qr-code.png" oninput="previewQrUrl()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 style="margin-bottom: var(--space-4); font-size: var(--text-lg);">🏦
+                                        เลขบัญชีธนาคาร</h3>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อธนาคาร</label>
+                                        <input type="text" class="form-input" id="bank-name"
+                                            placeholder="เช่น ธนาคารกสิกรไทย">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">เลขบัญชี</label>
+                                        <input type="text" class="form-input" id="bank-account"
+                                            placeholder="xxx-x-xxxxx-x">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อบัญชี</label>
+                                        <input type="text" class="form-input" id="bank-holder"
+                                            placeholder="ชื่อเจ้าของบัญชี">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg" id="payment-save-btn"
+                                style="margin-top: var(--space-4);">💾 บันทึก</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Section: Order Management -->
+                <div class="admin-section hidden" id="section-orders">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">📋 ออเดอร์ทั้งหมด</h2>
+                        <p
+                            style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-6);">
+                            กดปุ่ม ☰ เพื่อจัดการออเดอร์ เปลี่ยนสถานะ และส่งอีเมล/รหัสผ่านให้ลูกค้า
+                        </p>
+                        <div id="admin-orders-list">
+                            <div class="loader">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Section: Rewards Management -->
+                <div class="admin-section hidden" id="section-rewards">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">🎁 เพิ่ม/แก้ไขของรางวัล (Apps)</h2>
+                        <form id="reward-form" onsubmit="handleRewardSubmit(event)">
+                            <div class="grid grid-2" style="gap: var(--space-5);">
+                                <div>
+                                    <div class="image-upload" id="reward-image-preview">
+                                        <div class="image-upload-icon">📷</div>
+                                        <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">URL รูปภาพ</label>
+                                        <input type="url" class="form-input" id="reward-image-url"
+                                            placeholder="https://example.com/app-icon.png"
+                                            oninput="previewRewardImage()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อของรางวัล/แอป *</label>
+                                        <input type="text" class="form-input" id="reward-name"
+                                            placeholder="เช่น YouTube Premium 1 เดือน" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">ใช้แต้มแลก *</label>
+                                        <input type="number" class="form-input" id="reward-points" placeholder="500"
+                                            min="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">รายละเอียด</label>
+                                        <textarea class="form-textarea" id="reward-description"
+                                            placeholder="รายละเอียดของรางวัล..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    id="reward-submit-btn">เพิ่มของรางวัล</button>
+                                <button type="button" class="btn btn-secondary btn-lg hidden"
+                                    id="cancel-reward-edit-btn" onclick="resetRewardForm()">ยกเลิกการแก้ไข</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">🎁 รายการของรางวัลทั้งหมด</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>รูป</th>
+                                        <th>ชื่อของรางวัล</th>
+                                        <th>ใช้แต้ม</th>
+                                        <th>รายละเอียด</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-rewards-list">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;padding:var(--space-8);">
+                                            <div class="spinner" style="margin:0 auto;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Category Management -->
+                <div class="admin-section hidden" id="section-categories">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">📁 เพิ่ม/แก้ไขหมวดหมู่</h2>
+                        <form id="category-form" onsubmit="event.preventDefault(); handleCategorySubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label">ชื่อหมวดหมู่ *</label>
+                                <input type="text" class="form-input" id="category-name"
+                                    placeholder="เช่น สตรีมมิ่ง, เกม, พรีเมียม" required>
+                            </div>
+                            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    id="category-submit-btn">เพิ่มหมวดหมู่</button>
+                                <button type="button" class="btn btn-secondary btn-lg hidden"
+                                    id="cancel-category-edit-btn" onclick="resetCategoryForm()">ยกเลิก</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">📁 รายการหมวดหมู่</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ชื่อหมวดหมู่</th>
+                                        <th>จำนวนสินค้า</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-categories-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Contact Management -->
+                <div class="admin-section hidden" id="section-contacts">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">💬 เพิ่ม/แก้ไขช่องทางติดต่อ</h2>
+                        <form id="contact-form" onsubmit="event.preventDefault(); handleContactSubmit(event)">
+                            <div class="grid grid-2" style="gap: var(--space-5);">
+                                <div>
+                                    <div class="form-group">
+                                        <label class="form-label">ประเภท *</label>
+                                        <select class="form-input" id="contact-type" required>
+                                            <option value="line">Line</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="tiktok">TikTok</option>
+                                            <option value="phone">โทรศัพท์</option>
+                                            <option value="website">เว็บไซต์</option>
+                                            <option value="other">อื่นๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อแสดงผล *</label>
+                                        <input type="text" class="form-input" id="contact-name"
+                                            placeholder="เช่น @myshop" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <label class="form-label">ลิงก์/URL/เบอร์โทร *</label>
+                                        <input type="text" class="form-input" id="contact-value"
+                                            placeholder="Link หรือ เบอร์โทร" required>
+                                        <p style="font-size:0.8em;color:gray;margin-top:5px;">Line: ใส่ Link Profile
+                                            (เช่น https://line.me/ti/p/...)</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">สีปุ่ม</label>
+                                        <input type="color" class="form-input" id="contact-color" value="#06C755"
+                                            style="height:40px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    id="contact-submit-btn">เพิ่มช่องทาง</button>
+                                <button type="button" class="btn btn-secondary btn-lg hidden"
+                                    id="cancel-contact-edit-btn" onclick="resetContactForm()">ยกเลิก</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">💬 รายการช่องทางติดต่อ</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ประเภท</th>
+                                        <th>ชื่อ</th>
+                                        <th>ลิงก์/ค่า</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-contacts-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder" style="display:none;"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/orders.js"></script>
+    <script src="/js/admin_v2.js"></script>
+    <script>
+        // Check admin access after components load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkAdminAccess, 500);
+
+            // Show mobile sidebar toggle
+            if (window.innerWidth <= 768) {
+                const toggle = document.getElementById('admin-sidebar-toggle');
+                if (toggle) toggle.style.display = 'inline-flex';
+            }
+        });
+    </script>
+</body>
+
+</html>
