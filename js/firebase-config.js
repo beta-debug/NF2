@@ -3,12 +3,13 @@
 // Go to Firebase Console → Project Settings → Your apps → Web app → Config
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC0FAHicxw8rS848XDPLIk5MFzIUWN1sMA",
+  authDomain: "wednf-eeff9.firebaseapp.com",
+  projectId: "wednf-eeff9",
+  storageBucket: "wednf-eeff9.firebasestorage.app",
+  messagingSenderId: "778108810647",
+  appId: "1:778108810647:web:bb3818dafd6ea2eaa480d2",
+  measurementId: "G-HHLKP4PT7M"
 };
 
 // Initialize Firebase
@@ -24,3 +25,4 @@ const ADMIN_EMAIL = 'admin@shop.com';
 const ADMIN_PASSWORD = 'Admin123!';
 
 console.log('🔥 Firebase initialized');
+
