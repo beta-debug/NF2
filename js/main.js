@@ -38,9 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Load featured products on home page
+    // Load featured products on home page
     if (typeof loadFeaturedProducts === 'function') {
         loadFeaturedProducts();
     }
+
+    // Load contact channels
+    loadContactChannels();
 });
 
 // ===== Navigation =====
@@ -184,4 +188,71 @@ function formatDate(timestamp) {
 
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// ===== Floating Contact Button =====
+async function loadContactChannels() {
+    if (window.location.pathname.includes('admin')) return;
+
+    try {
+        if (typeof db === 'undefined') return;
+
+        const snapshot = await db.collection('contact_channels').orderBy('createdAt', 'desc').get();
+
+        if (snapshot.empty) return;
+
+        const container = document.createElement('div');
+        container.className = 'floating-contact-container';
+
+        let contactsHtml = '';
+        snapshot.forEach(doc => {
+            const c = doc.data();
+            let icon = '🔗';
+            let bgColor = c.color || '#333';
+
+            if (c.type === 'line') { icon = '💬'; bgColor = c.color || '#06C755'; }
+            if (c.type === 'facebook') { icon = '📘'; bgColor = c.color || '#1877F2'; }
+            if (c.type === 'instagram') { icon = '📸'; bgColor = c.color || '#E1306C'; }
+            if (c.type === 'tiktok') { icon = '🎵'; bgColor = c.color || '#000000'; }
+            if (c.type === 'phone') { icon = '📞'; bgColor = c.color || '#2ECC71'; }
+
+            contactsHtml += `
+                <a href="${c.value}" target="_blank" class="contact-item">
+                    <div class="contact-icon" style="background:${bgColor}">${icon}</div>
+                    <div class="contact-info">
+                        <span class="contact-name">${c.name}</span>
+                        <span class="contact-desc">${c.type.toUpperCase()}</span>
+                    </div>
+                </a>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="contact-list-popup" id="contact-popup">
+                <div class="contact-list-header">ติดต่อเรา</div>
+                ${contactsHtml}
+            </div>
+            <div class="floating-contact-btn" onclick="toggleContactPopup()">
+                💬
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('contact-popup');
+            const btn = document.querySelector('.floating-contact-btn');
+            if (popup && popup.classList.contains('active') && !popup.contains(e.target) && !btn.contains(e.target)) {
+                popup.classList.remove('active');
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading contact channels:', error);
+    }
+}
+
+function toggleContactPopup() {
+    const popup = document.getElementById('contact-popup');
+    if (popup) popup.classList.toggle('active');
 }

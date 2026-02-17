@@ -24,6 +24,7 @@ function checkAdminAccess() {
         loadAdminOrders();
         loadPaymentSettings();
         loadAdminRewards();
+        loadAdminContacts();
     });
 }
 
@@ -446,6 +447,9 @@ function closeAdminOrderModal() {
 }
 
 // ===== Rewards Management =====
+let editingRewardId = null;
+let rewardsCache = {};
+
 async function loadAdminRewards() {
     const tbody = document.getElementById('admin-rewards-list');
     if (!tbody) return;
@@ -461,8 +465,12 @@ async function loadAdminRewards() {
         }
 
         tbody.innerHTML = '';
+        rewardsCache = {}; // Reset cache
+
         snapshot.forEach(doc => {
             const r = doc.data();
+            rewardsCache[doc.id] = r; // Store for editing
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
         <td><img src="${r.imageUrl || ''}" alt="${r.name}" class="admin-table-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%231a1a2e%22 width=%2250%22 height=%2250%22/></svg>'"></td>
@@ -470,6 +478,7 @@ async function loadAdminRewards() {
         <td style="color:var(--color-secondary);font-weight:700;">${r.points} แต้ม</td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.description || '-'}</td>
         <td>
+            <button class="btn btn-secondary btn-sm" onclick="editReward('${doc.id}')" style="margin-right:5px;">✏️ แก้ไข</button>
             <button class="btn btn-danger btn-sm" onclick="deleteReward('${doc.id}', '${r.name.replace(/'/g, "\\'")}')">🗑️ ลบ</button>
         </td>
       `;
@@ -496,30 +505,49 @@ async function handleRewardSubmit(event) {
     }
 
     btn.disabled = true;
-    btn.textContent = 'กำลังเพิ่ม...';
+    btn.textContent = editingRewardId ? 'กำลังบันทึก...' : 'กำลังเพิ่ม...';
 
     try {
         const rewardData = {
             name, points, description, imageUrl,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        await db.collection('redeemables').add(rewardData);
-        showToast('เพิ่มของรางวัลสำเร็จ! 🎉', 'success');
+        if (editingRewardId) {
+            await db.collection('redeemables').doc(editingRewardId).update(rewardData);
+            showToast('แก้ไขของรางวัลสำเร็จ! ✅', 'success');
+        } else {
+            rewardData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('redeemables').add(rewardData);
+            showToast('เพิ่มของรางวัลสำเร็จ! 🎉', 'success');
+        }
 
-        document.getElementById('reward-form').reset();
-        document.getElementById('reward-image-preview').innerHTML = `
-            <div class="image-upload-icon">📷</div>
-            <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
-        `;
+        resetRewardForm();
         loadAdminRewards();
     } catch (error) {
         console.error('Error saving reward:', error);
         showToast('เกิดข้อผิดพลาด', 'error');
     } finally {
         btn.disabled = false;
-        btn.textContent = 'เพิ่มของรางวัล';
+        btn.textContent = editingRewardId ? 'บันทึกการแก้ไข' : 'เพิ่มของรางวัล';
     }
+}
+
+function editReward(id) {
+    const r = rewardsCache[id];
+    if (!r) return;
+
+    editingRewardId = id;
+    document.getElementById('reward-name').value = r.name || '';
+    document.getElementById('reward-points').value = r.points || '';
+    document.getElementById('reward-description').value = r.description || '';
+    document.getElementById('reward-image-url').value = r.imageUrl || '';
+
+    document.getElementById('reward-submit-btn').textContent = 'บันทึกการแก้ไข';
+    document.getElementById('cancel-reward-edit-btn').classList.remove('hidden');
+    document.getElementById('reward-form').scrollIntoView({ behavior: 'smooth' });
+
+    previewRewardImage();
 }
 
 async function deleteReward(rewardId, rewardName) {
@@ -528,6 +556,10 @@ async function deleteReward(rewardId, rewardName) {
     try {
         await db.collection('redeemables').doc(rewardId).delete();
         showToast('ลบของรางวัลสำเร็จ', 'success');
+        // If we deleted the item being edited, reset the form
+        if (editingRewardId === rewardId) {
+            resetRewardForm();
+        }
         loadAdminRewards();
     } catch (error) {
         console.error('Error deleting reward:', error);
@@ -549,7 +581,10 @@ function previewRewardImage() {
 }
 
 function resetRewardForm() {
+    editingRewardId = null;
     document.getElementById('reward-form').reset();
+    document.getElementById('reward-submit-btn').textContent = 'เพิ่มของรางวัล';
+    document.getElementById('cancel-reward-edit-btn').classList.add('hidden');
     document.getElementById('reward-image-preview').innerHTML = `
     <div class="image-upload-icon">📷</div>
     <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
