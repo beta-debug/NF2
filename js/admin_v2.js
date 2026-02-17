@@ -25,6 +25,7 @@ function checkAdminAccess() {
         loadAdminOrders();
         loadPaymentSettings();
         loadAdminRewards();
+        loadAdminCategories();
         loadAdminContacts();
     });
 }
@@ -101,6 +102,7 @@ async function handleProductSubmit(event) {
     const description = document.getElementById('product-description').value.trim();
     const imageUrl = document.getElementById('product-image-url').value.trim();
     const badge = document.getElementById('product-badge').value.trim();
+    const category = document.getElementById('product-category').value;
     const btn = document.getElementById('product-submit-btn');
 
     if (!name || !price) {
@@ -113,7 +115,7 @@ async function handleProductSubmit(event) {
 
     try {
         const productData = {
-            name, price, description, imageUrl, badge,
+            name, price, description, imageUrl, badge, category,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -148,6 +150,7 @@ async function editProduct(productId) {
         document.getElementById('product-description').value = p.description || '';
         document.getElementById('product-image-url').value = p.imageUrl || '';
         document.getElementById('product-badge').value = p.badge || '';
+        document.getElementById('product-category').value = p.category || '';
 
         editingProductId = productId;
         document.getElementById('product-submit-btn').textContent = 'อัปเดตสินค้า';
@@ -717,8 +720,136 @@ function resetContactForm() {
     document.getElementById('cancel-contact-edit-btn').classList.add('hidden');
 }
 
+
+// ===== Category Management =====
+let editingCategoryId = null;
+
+async function loadAdminCategories() {
+    const tbody = document.getElementById('admin-categories-list');
+    const productSelect = document.getElementById('product-category');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:var(--space-8);"><div class="spinner" style="margin:0 auto;"></div></td></tr>';
+
+    try {
+        const snapshot = await db.collection('categories').orderBy('createdAt', 'desc').get();
+
+        // Reset product select dropdown
+        if (productSelect) {
+            productSelect.innerHTML = '<option value="">-- เลือกหมวดหมู่ --</option>';
+        }
+
+        if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:var(--space-8);color:var(--color-text-muted);">ยังไม่มีหมวดหมู่</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        // Use a loop to get counts for each category
+        for (const doc of snapshot.docs) {
+            const cat = doc.data();
+            const productsSnapshot = await db.collection('products').where('category', '==', doc.id).get();
+            const count = productsSnapshot.size;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:600;color:var(--color-text);">${cat.name}</td>
+                <td>${count} สินค้า</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="editCategory('${doc.id}', '${cat.name.replace(/'/g, "\\'")}')" style="margin-right:5px;">✏️</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}', '${cat.name.replace(/'/g, "\\'")}')">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Add to product select dropdown
+            if (productSelect) {
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = cat.name;
+                productSelect.appendChild(opt);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:var(--space-8);color:var(--color-danger);">เกิดข้อผิดพลาด</td></tr>';
+    }
+}
+
+async function handleCategorySubmit(event) {
+    if (event) event.preventDefault();
+    const name = document.getElementById('category-name').value.trim();
+    const btn = document.getElementById('category-submit-btn');
+
+    if (!name) return;
+
+    btn.disabled = true;
+    btn.textContent = editingCategoryId ? 'กำลังบันทึก...' : 'กำลังเพิ่ม...';
+
+    try {
+        const catData = {
+            name,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (editingCategoryId) {
+            await db.collection('categories').doc(editingCategoryId).update(catData);
+            showToast('แก้ไขหมวดหมู่สำเร็จ!', 'success');
+        } else {
+            catData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('categories').add(catData);
+            showToast('เพิ่มหมวดหมู่สำเร็จ!', 'success');
+        }
+
+        resetCategoryForm();
+        loadAdminCategories();
+    } catch (error) {
+        console.error('Error saving category:', error);
+        showToast('เกิดข้อผิดพลาด', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = editingCategoryId ? 'บันทึกการแก้ไข' : 'เพิ่มหมวดหมู่';
+    }
+}
+
+function editCategory(id, name) {
+    editingCategoryId = id;
+    document.getElementById('category-name').value = name;
+    document.getElementById('category-submit-btn').textContent = 'บันทึกการแก้ไข';
+    document.getElementById('cancel-category-edit-btn').classList.remove('hidden');
+    document.getElementById('category-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteCategory(id, name) {
+    if (!confirm(`ต้องการลบหมวดหมู่ "${name}" หรือไม่?`)) return;
+
+    try {
+        await db.collection('categories').doc(id).delete();
+        showToast('ลบหมวดหมู่สำเร็จ', 'success');
+        if (editingCategoryId === id) resetCategoryForm();
+        loadAdminCategories();
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        showToast('เกิดข้อผิดพลาดในการลบ', 'error');
+    }
+}
+
+function resetCategoryForm() {
+    editingCategoryId = null;
+    document.getElementById('category-form').reset();
+    document.getElementById('category-submit-btn').textContent = 'เพิ่มหมวดหมู่';
+    document.getElementById('cancel-category-edit-btn').classList.add('hidden');
+}
+
 // Ensure functions are global
 window.handleContactSubmit = handleContactSubmit;
 window.editContact = editContact;
 window.deleteContact = deleteContact;
 window.resetContactForm = resetContactForm;
+
+window.handleCategorySubmit = handleCategorySubmit;
+window.editCategory = editCategory;
+window.deleteCategory = deleteCategory;
+window.resetCategoryForm = resetCategoryForm;
+window.loadAdminCategories = loadAdminCategories;

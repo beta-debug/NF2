@@ -1,43 +1,95 @@
 // ===== Products Module — Firestore CRUD =====
 
+let allProducts = [];
+let allCategories = [];
+const productsGrid = document.getElementById('products-grid');
+const categorySelect = document.getElementById('category-select');
+const productSearch = document.getElementById('product-search');
+
+// DOM Elements & Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+    loadProducts();
+});
+
 // Load all products from Firestore
 async function loadProducts() {
-    const grid = document.getElementById('products-grid');
-    if (!grid) return;
+    if (!productsGrid) return;
 
-    grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+    productsGrid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
     try {
-        const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
-
-        if (snapshot.empty) {
-            grid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-          <div class="empty-state-icon">🛒</div>
-          <h3 class="empty-state-title">ยังไม่มีสินค้า</h3>
-          <p class="empty-state-text">สินค้าจะแสดงเมื่อแอดมินเพิ่มสินค้าแล้ว</p>
-        </div>`;
-            return;
-        }
-
-        grid.innerHTML = '';
-        snapshot.forEach(doc => {
-            const product = { id: doc.id, ...doc.data() };
-            grid.appendChild(createProductCard(product));
-        });
-
-        // Re-init fade animations for new cards
-        if (typeof initFadeAnimations === 'function') {
-            initFadeAnimations();
-        }
+        const snapshot = await db.collection('products').orderBy('updatedAt', 'desc').get();
+        allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(allProducts);
     } catch (error) {
         console.error('Error loading products:', error);
-        grid.innerHTML = `
+        productsGrid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1;">
         <div class="empty-state-icon">⚠️</div>
         <h3 class="empty-state-title">โหลดสินค้าไม่สำเร็จ</h3>
         <p class="empty-state-text">กรุณาตรวจสอบการเชื่อมต่อ Firebase</p>
       </div>`;
+    }
+}
+
+// Load categories for filter
+async function loadCategories() {
+    if (!categorySelect) return;
+    try {
+        const snapshot = await db.collection('categories').orderBy('name').get();
+        allCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        allCategories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            categorySelect.appendChild(opt);
+        });
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+// Filter products based on search and category
+function filterProducts() {
+    if (!productSearch || !allProducts.length) return;
+
+    const searchTerm = productSearch.value.toLowerCase().trim();
+    const selectedCategory = categorySelect ? categorySelect.value : 'all';
+
+    const filtered = allProducts.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+            (product.description && product.description.toLowerCase().includes(searchTerm));
+        const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    renderProducts(filtered);
+}
+
+// Render products to grid
+function renderProducts(products) {
+    if (!productsGrid) return;
+
+    if (products.length === 0) {
+        productsGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state-icon">🛒</div>
+          <h3 class="empty-state-title">ไม่พบสินค้า</h3>
+          <p class="empty-state-text">ลองค้นหาด้วยคำอื่นหรือเปลี่ยนหมวดหมู่</p>
+        </div>`;
+        return;
+    }
+
+    productsGrid.innerHTML = '';
+    products.forEach(product => {
+        productsGrid.appendChild(createProductCard(product));
+    });
+
+    // Re-init fade animations for new cards
+    if (typeof initFadeAnimations === 'function') {
+        initFadeAnimations();
     }
 }
 
@@ -49,7 +101,7 @@ async function loadFeaturedProducts() {
     grid.innerHTML = '<div class="loader" style="grid-column: 1 / -1;"><div class="spinner"></div></div>';
 
     try {
-        const snapshot = await db.collection('products').orderBy('createdAt', 'desc').limit(3).get();
+        const snapshot = await db.collection('products').orderBy('updatedAt', 'desc').limit(3).get();
 
         if (snapshot.empty) {
             grid.innerHTML = `
@@ -92,10 +144,10 @@ function createProductCard(product) {
            onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect fill=%22%231a1a2e%22 width=%22400%22 height=%22300%22/><text fill=%22%23666%22 x=%22200%22 y=%22150%22 text-anchor=%22middle%22 font-size=%2216%22>No Image</text></svg>'">
       ${product.badge ? `<span class="product-card-badge">${product.badge}</span>` : ''}
     </div>
-    <div class="product-card-body">
+    <div class="product-card-body" style="flex-grow:1; display:flex; flex-direction:column;">
       <h3 class="product-card-title">${product.name}</h3>
-      <div class="product-card-description">${descriptionHTML}</div>
-      <div class="product-card-footer">
+      <div class="product-card-description" style="flex-grow:1;">${descriptionHTML}</div>
+      <div class="product-card-footer" style="margin-top:auto;">
         <div class="product-card-price">
           <span class="currency">฿</span>${formatPrice(product.price)}
         </div>
@@ -110,9 +162,19 @@ function createProductCard(product) {
 
 // Order product
 async function orderProduct(productId, productName, price) {
-    if (!currentUser) {
+    // Check if auth is available
+    if (typeof currentUser === 'undefined') {
+        // Fallback to simpler check if currentUser isn't globally available yet
+        const userRole = localStorage.getItem('userRole');
+        if (!userRole) {
+            showToast('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ', 'warning');
+            setTimeout(() => { window.location.href = '/pages/admin.html'; }, 1500);
+            return;
+        }
+    } else if (!currentUser) {
         showToast('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ', 'warning');
-        openAuthModal('login');
+        if (typeof openAuthModal === 'function') openAuthModal('login');
+        else setTimeout(() => { window.location.href = '/pages/admin.html'; }, 1500);
         return;
     }
 
@@ -122,12 +184,6 @@ async function orderProduct(productId, productName, price) {
 
 // Payment modal
 function showPaymentModal(productId, productName, price) {
-    // Remove existing modal if any
-    const existing = document.getElementById('payment-modal-backdrop');
-    if (existing) existing.remove();
-    const existingModal = document.getElementById('payment-modal');
-    if (existingModal) existingModal.remove();
-
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop active';
     backdrop.id = 'payment-modal-backdrop';
@@ -170,13 +226,15 @@ function closePaymentModal() {
 
 // Confirm order and redirect to payment page
 async function confirmOrder(productId, productName, price, paymentMethod) {
-    if (!currentUser) return;
-
     try {
+        const userId = typeof currentUser !== 'undefined' && currentUser ? currentUser.uid : 'anonymous';
+        const userEmail = typeof currentUser !== 'undefined' && currentUser ? currentUser.email : 'guest';
+        const userName = typeof currentUser !== 'undefined' && currentUser ? (currentUser.displayName || userEmail.split('@')[0]) : 'guest';
+
         const orderData = {
-            userId: currentUser.uid,
-            userName: currentUser.displayName || currentUser.email.split('@')[0],
-            userEmail: currentUser.email,
+            userId: userId,
+            userName: userName,
+            userEmail: userEmail,
             productId: productId,
             productName: productName,
             price: price,
@@ -190,7 +248,6 @@ async function confirmOrder(productId, productName, price, paymentMethod) {
         closePaymentModal();
         showToast('สร้างออเดอร์สำเร็จ! กำลังไปหน้าชำระเงิน...', 'success');
 
-        // Redirect to payment page
         setTimeout(() => {
             window.location.href = `/pages/payment.html?orderId=${docRef.id}&method=${paymentMethod}`;
         }, 1000);
@@ -199,3 +256,17 @@ async function confirmOrder(productId, productName, price, paymentMethod) {
         showToast('เกิดข้อผิดพลาดในการสั่งซื้อ', 'error');
     }
 }
+
+// Formatting price with commas
+function formatPrice(price) {
+    return Number(price).toLocaleString('en-US');
+}
+
+// Ensure functions are global
+window.filterProducts = filterProducts;
+window.orderProduct = orderProduct;
+window.formatPrice = formatPrice;
+window.confirmOrder = confirmOrder;
+window.closePaymentModal = closePaymentModal;
+window.loadProducts = loadProducts;
+window.loadFeaturedProducts = loadFeaturedProducts;

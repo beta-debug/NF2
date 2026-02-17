@@ -23,6 +23,20 @@
                     <h1 class="section-title">สินค้าทั้งหมด</h1>
                     <p class="section-subtitle">เลือกสินค้าที่ใช่สำหรับคุณ สั่งซื้อง่าย จ่ายสะดวก</p>
                 </div>
+
+                <!-- Filters & Search -->
+                <div class="filter-controls fade-in">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="product-search" placeholder="ค้นหาสินค้า..." oninput="filterProducts()">
+                    </div>
+                    <div class="category-filter">
+                        <select id="category-select" onchange="filterProducts()">
+                            <option value="all">ทุกหมวดหมู่</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-3 fade-in" id="products-grid">
                     <div class="loader" style="grid-column: 1 / -1;">
                         <div class="spinner"></div>
