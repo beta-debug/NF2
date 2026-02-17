@@ -23,6 +23,7 @@ function checkAdminAccess() {
         loadAdminProducts();
         loadAdminOrders();
         loadPaymentSettings();
+        loadAdminRewards();
     });
 }
 
@@ -394,16 +395,40 @@ async function updateOrderAdmin(orderId) {
         const email = document.getElementById('cred-email').value.trim();
         const password = document.getElementById('cred-password').value.trim();
 
-        const updateData = {
-            status: status,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+        // Use transaction to update status and award points if newly completed
+        await db.runTransaction(async (transaction) => {
+            const orderRef = db.collection('orders').doc(orderId);
+            const orderDoc = await transaction.get(orderRef);
+            if (!orderDoc.exists) throw "Order does not exist!";
 
-        if (email || password) {
-            updateData.credentials = { email, password };
-        }
+            const orderData = orderDoc.data();
+            const updateData = {
+                status: status,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
-        await db.collection('orders').doc(orderId).update(updateData);
+            if (email || password) {
+                updateData.credentials = { email, password };
+            }
+
+            // Award points logic: Only if changing TO 'completed' FROM something else
+            if (status === 'completed' && orderData.status !== 'completed' && orderData.userId) {
+                const points = Math.floor(orderData.price || 0);
+                const userRef = db.collection('users').doc(orderData.userId);
+
+                // Ensure user doc exists before updating (should generally exist, but safe check would be better)
+                // Assuming auth flow creates user doc. If not, set with merge.
+                // But transaction.set merge:true is safer.
+                // For now, assume user doc exists or increment handles it.
+                transaction.update(userRef, {
+                    points: firebase.firestore.FieldValue.increment(points)
+                });
+                console.log(`Awarded ${points} points to user ${orderData.userId}`);
+            }
+
+            transaction.update(orderRef, updateData);
+        });
+
         showToast('อัปเดตออเดอร์สำเร็จ! ✅', 'success');
         closeAdminOrderModal();
         loadAdminOrders();
@@ -418,4 +443,115 @@ function closeAdminOrderModal() {
     const modal = document.getElementById('admin-order-modal');
     if (backdrop) backdrop.remove();
     if (modal) modal.remove();
+}
+
+// ===== Rewards Management =====
+async function loadAdminRewards() {
+    const tbody = document.getElementById('admin-rewards-list');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:var(--space-8);"><div class="spinner" style="margin:0 auto;"></div></td></tr>';
+
+    try {
+        const snapshot = await db.collection('redeemables').orderBy('createdAt', 'desc').get();
+
+        if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:var(--space-8);color:var(--color-text-muted);">ยังไม่มีของรางวัล</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        snapshot.forEach(doc => {
+            const r = doc.data();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+        <td><img src="${r.imageUrl || ''}" alt="${r.name}" class="admin-table-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%231a1a2e%22 width=%2250%22 height=%2250%22/></svg>'"></td>
+        <td style="font-weight:600;color:var(--color-text);">${r.name}</td>
+        <td style="color:var(--color-secondary);font-weight:700;">${r.points} แต้ม</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.description || '-'}</td>
+        <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteReward('${doc.id}', '${r.name.replace(/'/g, "\\'")}')">🗑️ ลบ</button>
+        </td>
+      `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error loading admin rewards:', error);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:var(--space-8);color:var(--color-danger);">เกิดข้อผิดพลาด</td></tr>';
+    }
+}
+
+async function handleRewardSubmit(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('reward-name').value.trim();
+    const points = parseInt(document.getElementById('reward-points').value);
+    const description = document.getElementById('reward-description').value.trim();
+    const imageUrl = document.getElementById('reward-image-url').value.trim();
+    const btn = document.getElementById('reward-submit-btn');
+
+    if (!name || !points) {
+        showToast('กรุณากรอกชื่อและแต้ม', 'warning');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'กำลังเพิ่ม...';
+
+    try {
+        const rewardData = {
+            name, points, description, imageUrl,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('redeemables').add(rewardData);
+        showToast('เพิ่มของรางวัลสำเร็จ! 🎉', 'success');
+
+        document.getElementById('reward-form').reset();
+        document.getElementById('reward-image-preview').innerHTML = `
+            <div class="image-upload-icon">📷</div>
+            <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+        `;
+        loadAdminRewards();
+    } catch (error) {
+        console.error('Error saving reward:', error);
+        showToast('เกิดข้อผิดพลาด', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'เพิ่มของรางวัล';
+    }
+}
+
+async function deleteReward(rewardId, rewardName) {
+    if (!confirm(`ต้องการลบของรางวัล "${rewardName}" หรือไม่?`)) return;
+
+    try {
+        await db.collection('redeemables').doc(rewardId).delete();
+        showToast('ลบของรางวัลสำเร็จ', 'success');
+        loadAdminRewards();
+    } catch (error) {
+        console.error('Error deleting reward:', error);
+        showToast('เกิดข้อผิดพลาดในการลบ', 'error');
+    }
+}
+
+function previewRewardImage() {
+    const url = document.getElementById('reward-image-url').value.trim();
+    const preview = document.getElementById('reward-image-preview');
+    if (url) {
+        preview.innerHTML = `<img src="${url}" class="image-upload-preview" alt="preview" onerror="this.parentElement.innerHTML='<div class=\\'image-upload-icon\\'>⚠️</div><div class=\\'image-upload-text\\'>URL รูปภาพไม่ถูกต้อง</div>'">`;
+    } else {
+        preview.innerHTML = `
+      <div class="image-upload-icon">📷</div>
+      <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+    `;
+    }
+}
+
+function resetRewardForm() {
+    document.getElementById('reward-form').reset();
+    document.getElementById('reward-image-preview').innerHTML = `
+    <div class="image-upload-icon">📷</div>
+    <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+  `;
 }

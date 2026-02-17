@@ -184,6 +184,75 @@
                         </div>
                     </div>
                 </div>
+                <!-- Section: Rewards Management -->
+                <div class="admin-section hidden" id="section-rewards">
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">🎁 เพิ่ม/แก้ไขของรางวัล (Apps)</h2>
+                        <form id="reward-form" onsubmit="handleRewardSubmit(event)">
+                            <div class="grid grid-2" style="gap: var(--space-5);">
+                                <div>
+                                    <div class="image-upload" id="reward-image-preview">
+                                        <div class="image-upload-icon">📷</div>
+                                        <div class="image-upload-text">วาง URL รูปภาพด้านล่าง</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">URL รูปภาพ</label>
+                                        <input type="url" class="form-input" id="reward-image-url"
+                                            placeholder="https://example.com/app-icon.png"
+                                            oninput="previewRewardImage()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <label class="form-label">ชื่อของรางวัล/แอป *</label>
+                                        <input type="text" class="form-input" id="reward-name"
+                                            placeholder="เช่น YouTube Premium 1 เดือน" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">ใช้แต้มแลก *</label>
+                                        <input type="number" class="form-input" id="reward-points" placeholder="500"
+                                            min="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">รายละเอียด</label>
+                                        <textarea class="form-textarea" id="reward-description"
+                                            placeholder="รายละเอียดของรางวัล..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    id="reward-submit-btn">เพิ่มของรางวัล</button>
+                                <button type="button" class="btn btn-secondary btn-lg hidden"
+                                    id="cancel-reward-edit-btn" onclick="resetRewardForm()">ยกเลิกการแก้ไข</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="admin-panel">
+                        <h2 class="admin-panel-title">🎁 รายการของรางวัลทั้งหมด</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>รูป</th>
+                                        <th>ชื่อของรางวัล</th>
+                                        <th>ใช้แต้ม</th>
+                                        <th>รายละเอียด</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-rewards-list">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;padding:var(--space-8);">
+                                            <div class="spinner" style="margin:0 auto;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

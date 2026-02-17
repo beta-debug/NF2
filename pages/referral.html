@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แนะนำเพื่อน — MyShop</title>
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon" href="images/favicon.ico">
+</head>
+
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="page-content">
+        <section class="section">
+            <div class="container">
+                <div class="text-center" style="margin-bottom: var(--space-8);">
+                    <h1 class="section-title">👥 แนะนำเพื่อน</h1>
+                    <p class="section-subtitle">ชวนเพื่อนมาสมัครสมาชิก รับสิทธิพิเศษมากมาย</p>
+                </div>
+
+                <div class="card"
+                    style="max-width: 600px; margin: 0 auto; padding: var(--space-8); text-align: center;">
+                    <div style="font-size: 60px; margin-bottom: var(--space-4);">🔗</div>
+                    <h2 class="card-title" style="font-size: var(--text-2xl);">ลิงก์แนะนำของคุณ</h2>
+                    <p style="margin-bottom: var(--space-6);">ส่งลิงก์นี้ให้เพื่อนสมัครสมาชิก</p>
+
+                    <div
+                        style="background: var(--color-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md); border: 1px dashed var(--color-border); margin-bottom: var(--space-6); position: relative; display: flex; align-items: center; justify-content: space-between;">
+                        <code id="referral-link"
+                            style="color: var(--color-accent); word-break: break-all; font-family: var(--font-mono);">กำลังโหลด...</code>
+                        <button class="btn btn-secondary btn-sm" onclick="copyReferralLink()"
+                            style="margin-left: var(--space-4);">คัดลอก</button>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: center; gap: var(--space-8); border-top: 1px solid var(--color-border); padding-top: var(--space-6);">
+                        <div>
+                            <div style="font-size: var(--text-sm); color: var(--color-text-muted);">เพื่อนที่สมัครแล้ว
+                            </div>
+                            <div style="font-size: var(--text-4xl); font-weight: 800; color: var(--color-primary);"
+                                id="referral-count">0</div>
+                            <div style="font-size: var(--text-xs); color: var(--color-text-muted);">คน</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    initReferralPage(user);
+                } else {
+                    document.getElementById('referral-link').innerText = 'กรุณาเข้าสู่ระบบ';
+                    openAuthModal('login');
+                }
+            });
+        });
+
+        async function initReferralPage(user) {
+            // Generate Link
+            const baseUrl = window.location.origin; // e.g. https://myshop.vercel.app
+            const refLink = `${baseUrl}/index.html?ref=${user.uid}`;
+            document.getElementById('referral-link').innerText = refLink;
+
+            // Load specific referral stats if stored, or count from users collection query
+            // Ideally we store 'referralCount' on user doc to avoid expensive queries.
+            try {
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists) {
+                    const count = doc.data().referralCount || 0;
+                    document.getElementById('referral-count').innerText = count;
+                }
+            } catch (error) {
+                console.error("Error loading referral stats:", error);
+            }
+        }
+
+        function copyReferralLink() {
+            const linkText = document.getElementById('referral-link').innerText;
+            if (linkText.includes('http')) {
+                navigator.clipboard.writeText(linkText).then(() => {
+                    showToast('คัดลอกลิงก์แล้ว! ✅', 'success');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showToast('คัดลอกไม่สำเร็จ', 'error');
+                });
+            } else {
+                showToast('กรุณาเข้าสู่ระบบก่อน', 'warning');
+            }
+        }
+    </script>
+</body>
+
+</html>

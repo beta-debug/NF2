@@ -1,5 +1,13 @@
 // ===== Auth Module — Firebase Authentication =====
 
+// Check for referral code
+const urlParams = new URLSearchParams(window.location.search);
+const refCode = urlParams.get('ref');
+if (refCode) {
+    sessionStorage.setItem('referralCode', refCode);
+    console.log('Referral:', refCode);
+}
+
 let currentUser = null;
 
 function initAuth() {
@@ -105,12 +113,25 @@ async function handleRegister(event) {
         await userCredential.user.updateProfile({ displayName: name });
 
         // Save user data to Firestore
-        await db.collection('users').doc(userCredential.user.uid).set({
+        const userData = {
             name: name,
             email: email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            role: email === ADMIN_EMAIL ? 'admin' : 'customer'
-        });
+            role: email === ADMIN_EMAIL ? 'admin' : 'customer',
+            points: 0,
+            referralCount: 0
+        };
+
+        const referredBy = sessionStorage.getItem('referralCode');
+        if (referredBy && referredBy !== userCredential.user.uid) {
+            userData.referredBy = referredBy;
+            // Increment referrer count
+            db.collection('users').doc(referredBy).update({
+                referralCount: firebase.firestore.FieldValue.increment(1)
+            }).catch(console.error);
+        }
+
+        await db.collection('users').doc(userCredential.user.uid).set(userData);
 
         showToast('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ 🎉', 'success');
         closeAuthModal();
