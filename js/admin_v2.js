@@ -1,4 +1,5 @@
 // ===== Admin Module — Dashboard Logic =====
+console.log("Admin Script V2 Loaded Successfully");
 
 let editingProductId = null;
 

@@ -266,7 +266,7 @@
                 <div class="admin-section hidden" id="section-contacts">
                     <div class="admin-panel">
                         <h2 class="admin-panel-title">💬 เพิ่ม/แก้ไขช่องทางติดต่อ</h2>
-                        <form id="contact-form" onsubmit="handleContactSubmit(event)">
+                        <form id="contact-form" onsubmit="event.preventDefault(); handleContactSubmit(event)">
                             <div class="grid grid-2" style="gap: var(--space-5);">
                                 <div>
                                     <div class="form-group">

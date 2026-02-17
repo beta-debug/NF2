@@ -76,6 +76,16 @@ async function loadFeaturedProducts() {
 function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card fade-in';
+
+    // Process description into lines if it exists
+    let descriptionHTML = '';
+    if (product.description) {
+        const lines = product.description.split('\n').filter(line => line.trim() !== '');
+        descriptionHTML = `<ul class="product-card-description-list">
+            ${lines.map(line => `<li><span class="check-icon">✓</span> ${line.trim()}</li>`).join('')}
+        </ul>`;
+    }
+
     card.innerHTML = `
     <div class="product-card-image">
       <img src="${product.imageUrl || '/images/package-1.webp'}" alt="${product.name}" 
@@ -84,7 +94,7 @@ function createProductCard(product) {
     </div>
     <div class="product-card-body">
       <h3 class="product-card-title">${product.name}</h3>
-      <p class="product-card-description">${product.description || ''}</p>
+      <div class="product-card-description">${descriptionHTML}</div>
       <div class="product-card-footer">
         <div class="product-card-price">
           <span class="currency">฿</span>${formatPrice(product.price)}
