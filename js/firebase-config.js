@@ -22,7 +22,8 @@ const auth = firebase.auth();
 // ===== Admin Credentials =====
 // Change these to your own admin email/password
 const ADMIN_EMAIL = 'admin@shop.com';
-const ADMIN_PASSWORD = 'Admin123!';
+const ADMIN_PASSWORD = 'admin1234';
 
 console.log('🔥 Firebase initialized');
+
 
